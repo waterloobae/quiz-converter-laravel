@@ -95,10 +95,91 @@ This converter generates quizzes in the following formats:
    - Universal format compatible with most modern LMS platforms
    - Includes: Canvas, Blackboard, Moodle, Sakai, and others
 
+## Laravel Integration
+
+All quiz generator classes now extend Laravel's `Controller` base class, making them ready to use in Laravel applications. Each controller provides:
+
+- **`generate()`**: Returns an HTTP Response with the generated quiz content
+- **`download()`**: Returns an HTTP Response with appropriate headers for file download
+- **`saveToFile($filename)`**: Saves the quiz to a file (for standalone/CLI usage)
+
+### Example Laravel Routes
+
+```php
+// routes/web.php or routes/api.php
+use Waterloobae\QuizConverter\CanvasQuizGenerator;
+use Waterloobae\QuizConverter\MoodleQuizGenerator;
+use Waterloobae\QuizConverter\D2LQuizGenerator;
+use Waterloobae\QuizConverter\H5PQuizGenerator;
+use Waterloobae\QuizConverter\QTIQuizGenerator;
+
+Route::post('/quiz/canvas/generate', function(Request $request) {
+    $generator = new CanvasQuizGenerator();
+    $generator->setQuestions($request->input('questions'));
+    return $generator->generate();
+});
+
+Route::post('/quiz/canvas/download', function(Request $request) {
+    $generator = new CanvasQuizGenerator();
+    $generator->setQuestions($request->input('questions'));
+    return $generator->download();
+});
+
+Route::post('/quiz/moodle/download', function(Request $request) {
+    $generator = new MoodleQuizGenerator();
+    $generator->setQuestions($request->input('questions'));
+    return $generator->download();
+});
+
+Route::post('/quiz/d2l/download', function(Request $request) {
+    $generator = new D2LQuizGenerator();
+    $generator->setQuestions($request->input('questions'));
+    return $generator->download();
+});
+
+Route::post('/quiz/h5p/download', function(Request $request) {
+    $generator = new H5PQuizGenerator();
+    $generator->setQuestions($request->input('questions'));
+    return $generator->download();
+});
+
+Route::post('/quiz/qti/download', function(Request $request) {
+    $generator = new QTIQuizGenerator();
+    $generator->setQuestions($request->input('questions'))
+              ->setVersion($request->input('version', '2.1'));
+    return $generator->download();
+});
+```
+
 ## Usage Examples
 
+All quiz generators now extend Laravel's `Controller` class and can be used in Laravel applications as controllers.
+
 ### Canvas Quiz
+
+**As a Laravel Controller:**
 ```php
+use Waterloobae\QuizConverter\CanvasQuizGenerator;
+
+// In a controller method
+public function generateCanvasQuiz(Request $request) {
+    $questions = $request->input('questions');
+    
+    $generator = new CanvasQuizGenerator();
+    $generator->setQuestions($questions);
+    
+    // Returns XML as HTTP response
+    return $generator->generate();
+    
+    // Or download as file
+    return $generator->download();
+}
+```
+
+**Standalone Usage:**
+```php
+use Waterloobae\QuizConverter\CanvasQuizGenerator;
+
 $questions = [
     [
         'text' => 'What is 2 + 2?',
@@ -107,12 +188,36 @@ $questions = [
     ]
 ];
 
-$generator = new CanvasQuizGenerator($questions);
+$generator = new CanvasQuizGenerator();
+$generator->setQuestions($questions);
 $generator->saveToFile('canvas_quiz.xml');
 ```
 
 ### Moodle Quiz
+
+**As a Laravel Controller:**
 ```php
+use Waterloobae\QuizConverter\MoodleQuizGenerator;
+
+// In a controller method
+public function generateMoodleQuiz(Request $request) {
+    $questions = $request->input('questions');
+    
+    $generator = new MoodleQuizGenerator();
+    $generator->setQuestions($questions);
+    
+    // Returns XML as HTTP response
+    return $generator->generate();
+    
+    // Or download as file
+    return $generator->download();
+}
+```
+
+**Standalone Usage:**
+```php
+use Waterloobae\QuizConverter\MoodleQuizGenerator;
+
 $questions = [
     [
         "type" => "multiple_choice",
@@ -131,12 +236,36 @@ $questions = [
     ]
 ];
 
-$generator = new MoodleQuizGenerator($questions);
-$generator->generateXML();
+$generator = new MoodleQuizGenerator();
+$generator->setQuestions($questions);
+$generator->saveToFile('moodle_quiz.xml');
 ```
 
 ### D2L Quiz
+
+**As a Laravel Controller:**
 ```php
+use Waterloobae\QuizConverter\D2LQuizGenerator;
+
+// In a controller method
+public function generateD2LQuiz(Request $request) {
+    $questions = $request->input('questions');
+    
+    $generator = new D2LQuizGenerator();
+    $generator->setQuestions($questions);
+    
+    // Returns XML as HTTP response
+    return $generator->generate();
+    
+    // Or download as file
+    return $generator->download();
+}
+```
+
+**Standalone Usage:**
+```php
+use Waterloobae\QuizConverter\D2LQuizGenerator;
+
 $questions = [
     [
         'text' => 'What is 2 + 2?',
@@ -146,11 +275,30 @@ $questions = [
     ]
 ];
 
-$generator = new D2LQuizGenerator($questions);
+$generator = new D2LQuizGenerator();
+$generator->setQuestions($questions);
 $generator->saveToFile('d2l_quiz.xml');
 ```
 
 ### H5P Quiz
+
+**As a Laravel Controller:**
+```php
+use Waterloobae\QuizConverter\H5PQuizGenerator;
+
+// In a controller method
+public function generateH5PQuiz(Request $request) {
+    $questions = $request->input('questions');
+    
+    $generator = new H5PQuizGenerator();
+    $generator->setQuestions($questions);
+    
+    // Returns H5P file as download
+    return $generator->download();
+}
+```
+
+**Standalone Usage:**
 ```php
 use Waterloobae\QuizConverter\H5PQuizGenerator;
 
@@ -172,30 +320,77 @@ $questions = [
     ]
 ];
 
-$generator = new H5PQuizGenerator($questions);
+$generator = new H5PQuizGenerator();
+$generator->setQuestions($questions);
 $generator->generate();
 ```
 
 ### QTI Quiz (Multiple Versions)
+
+**As a Laravel Controller:**
 ```php
+use Waterloobae\QuizConverter\QTIQuizGenerator;
+
+// In a controller method
+public function generateQTIQuiz(Request $request) {
+    $questions = $request->input('questions');
+    $version = $request->input('version', '2.1'); // Default to 2.1
+    
+    $generator = new QTIQuizGenerator();
+    $generator->setQuestions($questions)
+              ->setVersion($version);
+    
+    // Returns XML as HTTP response
+    return $generator->generate();
+    
+    // Or download as file
+    return $generator->download();
+}
+```
+
+**Standalone Usage:**
+```php
+use Waterloobae\QuizConverter\QTIQuizGenerator;
+
+$questions = [
+    [
+        'text' => 'What is 2 + 2?',
+        'choices' => ['3', '4', '5'],
+        'correct_index' => 1,
+        'solution' => '2 + 2 equals 4.'
+    ]
+];
+
 // QTI 2.1 (default)
-$generator = new QTIQuizGenerator($questions, '2.1');
+$generator = new QTIQuizGenerator();
+$generator->setQuestions($questions)->setVersion('2.1');
 $generator->saveToFile('qti_2.1_quiz.xml');
 
 // QTI 1.2
-$generator = new QTIQuizGenerator($questions, '1.2');
+$generator = new QTIQuizGenerator();
+$generator->setQuestions($questions)->setVersion('1.2');
 $generator->saveToFile('qti_1.2_quiz.xml');
 
 // QTI 2.2
-$generator = new QTIQuizGenerator($questions, '2.2');
+$generator = new QTIQuizGenerator();
+$generator->setQuestions($questions)->setVersion('2.2');
 $generator->saveToFile('qti_2.2_quiz.xml');
 
 // QTI 3.0
-$generator = new QTIQuizGenerator($questions, '3.0');
+$generator = new QTIQuizGenerator();
+$generator->setQuestions($questions)->setVersion('3.0');
 $generator->saveToFile('qti_3.0_quiz.xml');
 ```
 
 ## Installation
+
+### For Laravel Projects
+
+```bash
+composer require waterloobae/quizconverter
+```
+
+### Standalone Installation
 
 ```bash
 composer install
@@ -207,15 +402,20 @@ composer install
 - ext-zip (for H5P package generation)
 - ext-json (for JSON operations)
 - Composer for dependency management
+- Laravel 9.x, 10.x, or 11.x (when using as Laravel controllers)
 
 ## Dependencies
 
-- h5p/h5p-core: Core H5P functionality
-- h5p/h5p-editor: H5P editor support
-- h5p/h5p-multi-choice: Multiple choice question type
-- h5p/h5p-question-set: Question set functionality
-- h5p/h5p-arithmetic-quiz: Arithmetic quiz support
-- h5p/h5p-math-display: Mathematical expression rendering
+- **Laravel Dependencies:**
+  - illuminate/http: HTTP response handling
+  - illuminate/routing: Controller base class
+- **H5P Dependencies:**
+  - h5p/h5p-core: Core H5P functionality
+  - h5p/h5p-editor: H5P editor support
+  - h5p/h5p-multi-choice: Multiple choice question type
+  - h5p/h5p-question-set: Question set functionality
+  - h5p/h5p-arithmetic-quiz: Arithmetic quiz support
+  - h5p/h5p-math-display: Mathematical expression rendering
 
 ## Output Files
 
