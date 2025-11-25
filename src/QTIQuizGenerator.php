@@ -1,12 +1,28 @@
 <?php
 
-class QTIQuizGenerator {
+namespace Waterloobae\QuizConverter;
+
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Response;
+use SimpleXMLElement;
+
+class QTIQuizGenerator extends Controller {
     private $questions;
     private $version;
 
-    public function __construct(array $questions, string $version = '2.1') {
+    public function __construct() {
+        $this->questions = [];
+        $this->version = '2.1';
+    }
+
+    public function setQuestions(array $questions) {
         $this->questions = $questions;
+        return $this;
+    }
+
+    public function setVersion(string $version) {
         $this->version = $version;
+        return $this;
     }
 
     public function generateXML() {
@@ -70,25 +86,17 @@ class QTIQuizGenerator {
     public function getVersion() {
         return $this->version;
     }
+
+    public function download() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="qti_quiz.xml"');
+    }
+
+    public function generate() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml');
+    }
 }
-
-// Example usage
-$questions = [
-    [
-        'text' => 'What is 2 + 2?',
-        'choices' => ['3', '4', '5'],
-        'correct_index' => 1,
-        'solution' => '2 + 2 equals 4 because it is basic arithmetic.'
-    ],
-    [
-        'text' => 'What is the capital of France?',
-        'choices' => ['Berlin', 'Paris', 'Madrid'],
-        'correct_index' => 1,
-        'solution' => 'Paris is the capital of France.'
-    ]
-];
-
-$generator = new QTIQuizGenerator($questions, '2.1'); // Change to '1.2', '2.2', or '3.0' as needed
-$generator->saveToFile('qti_quiz.xml');
-
-echo "QTI Quiz XML file (v{$generator->getVersion()}) generated successfully.";

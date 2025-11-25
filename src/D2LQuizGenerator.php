@@ -1,10 +1,21 @@
 <?php
 
-class D2LQuizGenerator {
+namespace Waterloobae\QuizConverter;
+
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Response;
+use SimpleXMLElement;
+
+class D2LQuizGenerator extends Controller {
     private $questions;
 
-    public function __construct(array $questions) {
+    public function __construct() {
+        $this->questions = [];
+    }
+
+    public function setQuestions(array $questions) {
         $this->questions = $questions;
+        return $this;
     }
 
     public function generateXML() {
@@ -38,25 +49,17 @@ class D2LQuizGenerator {
     public function saveToFile($filename) {
         file_put_contents($filename, $this->generateXML());
     }
+
+    public function download() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="d2l_quiz.xml"');
+    }
+
+    public function generate() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml');
+    }
 }
-
-// Example usage
-$questions = [
-    [
-        'text' => 'What is 2 + 2?',
-        'choices' => ['3', '4', '5'],
-        'correct_index' => 1,
-        'solution' => '2 + 2 equals 4 because it is basic arithmetic.'
-    ],
-    [
-        'text' => 'What is the capital of France?',
-        'choices' => ['Berlin', 'Paris', 'Madrid'],
-        'correct_index' => 1,
-        'solution' => 'Paris is the capital of France.'
-    ]
-];
-
-$generator = new D2LQuizGenerator($questions);
-$generator->saveToFile('d2l_quiz.xml');
-
-echo "D2L Quiz XML file generated successfully.";

@@ -1,24 +1,37 @@
 <?php
 namespace Waterloobae\QuizConverter;
+
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Response;
 use ZipArchive;
 use Exception;
 
-class H5PQuizGenerator {
+class H5PQuizGenerator extends Controller {
     private $questions;
     private $h5pDir;
     private $outputFile;
 
-    public function __construct(array $questions, $outputFile = "quiz.h5p") {
+    public function __construct() {
+        $this->questions = [];
+        $this->outputFile = "quiz.h5p";
+    }
+
+    public function setQuestions(array $questions) {
         $this->questions = $questions;
-        $this->h5pDir = sys_get_temp_dir() . "/h5p_quiz_" . uniqid();
+        return $this;
+    }
+
+    public function setOutputFile($outputFile) {
         $this->outputFile = $outputFile;
+        return $this;
+    }
+
+    public function generate() {
+        $this->h5pDir = sys_get_temp_dir() . "/h5p_quiz_" . uniqid();
 
         if (!mkdir($this->h5pDir, 0777, true)) {
             throw new Exception("Failed to create temp directory.");
         }
-    }
-
-    public function generate() {
         $content = $this->buildContentJson();
         $this->saveJsonFile("content/content.json", $content);
         $this->addMetadata();
@@ -174,31 +187,37 @@ class H5PQuizGenerator {
             }
         }
     }
-}
 
-// Example Usage:
-/**
-$quizQuestions = [
-    [
-        "type" => "multiple_choice",
-        "text" => "What is \\(x^2\\) when \\(x = 2\\)?",
-        "choices" => [
-            ["text" => "\\(2\\)", "correct" => false],
-            ["text" => "\\(4\\)", "correct" => true],
-            ["text" => "\\(8\\)", "correct" => false]
-        ],
-        "solution" => "Since \\(x = 2\\), we calculate \\(2^2 = 4\\)."
-    ],
-    [
-        "type" => "numeric",
-        "text" => "Solve for \\(x\\) in \\(x + 3 = 5\\)",
-        "answer" => 2,
-        "solution" => "Subtract 3 from both sides: \\(x = 5 - 3 = 2\\)."
-        ]
-    ];
-    
-    $quizGenerator = new H5PQuizGenerator($quizQuestions);
-    $quizGenerator->generate();
-    
-    echo "Quiz H5P file with solutions created successfully!";
-    */
+    private function cleanup() {
+        if ($this->h5pDir && is_dir($this->h5pDir)) {
+            $this->removeDirectory($this->h5pDir);
+        }
+    }
+
+    private function removeDirectory($dir) {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = "$dir/$file";
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
+    }
+
+    public function download() {
+        $this->generate();
+        $content = file_get_contents($this->outputFile);
+        $this->cleanup();
+        
+        return response($content, 200)
+            ->header('Content-Type', 'application/zip')
+            ->header('Content-Disposition', 'attachment; filename="quiz.h5p"');
+    }
+
+    public function getFile() {
+        $this->generate();
+        return $this->outputFile;
+    }
+}

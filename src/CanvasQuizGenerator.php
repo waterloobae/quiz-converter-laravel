@@ -1,10 +1,21 @@
 <?php
 
-class CanvasQuizGenerator {
+namespace Waterloobae\QuizConverter;
+
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Response;
+use SimpleXMLElement;
+
+class CanvasQuizGenerator extends Controller {
     private $questions;
 
-    public function __construct(array $questions) {
+    public function __construct() {
+        $this->questions = [];
+    }
+
+    public function setQuestions(array $questions) {
         $this->questions = $questions;
+        return $this;
     }
 
     public function generateXML() {
@@ -58,23 +69,17 @@ class CanvasQuizGenerator {
     public function saveToFile($filename) {
         file_put_contents($filename, $this->generateXML());
     }
+
+    public function download() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="canvas_quiz.xml"');
+    }
+
+    public function generate() {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml');
+    }
 }
-
-// Example usage
-$questions = [
-    [
-        'text' => 'What is 2 + 2?',
-        'choices' => ['3', '4', '5'],
-        'correct_index' => 1
-    ],
-    [
-        'text' => 'What is the capital of France?',
-        'choices' => ['Berlin', 'Paris', 'Madrid'],
-        'correct_index' => 1
-    ]
-];
-
-$generator = new CanvasQuizGenerator($questions);
-$generator->saveToFile('canvas_quiz.xml');
-
-echo "Canvas Quiz XML file generated successfully.";
