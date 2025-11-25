@@ -1,15 +1,27 @@
 <?php
 
-class MoodleQuizGenerator
+namespace Waterloobae\QuizConverter;
+
+use Illuminate\Routing\Controller;
+use Illuminate\Http\Response;
+use DOMDocument;
+
+class MoodleQuizGenerator extends Controller
 {
     private $questions;
     private $xml;
 
-    public function __construct(array $questions)
+    public function __construct()
     {
-        $this->questions = $questions;
+        $this->questions = [];
         $this->xml = new DOMDocument("1.0", "UTF-8");
         $this->xml->formatOutput = true;
+    }
+
+    public function setQuestions(array $questions)
+    {
+        $this->questions = $questions;
+        return $this;
     }
 
     public function generateXML()
@@ -25,9 +37,13 @@ class MoodleQuizGenerator
             }
         }
 
-        $filename = "moodle_quiz.xml";
-        $this->xml->save($filename);
-        echo "Moodle Quiz XML file generated: $filename\n";
+        return $this->xml->saveXML();
+    }
+
+    public function saveToFile($filename = "moodle_quiz.xml")
+    {
+        file_put_contents($filename, $this->generateXML());
+        return $filename;
     }
 
     private function generateMultipleChoice($question)
@@ -112,27 +128,19 @@ class MoodleQuizGenerator
     {
         return str_replace(["$", "\\("], ["\\(", "\\["], $text);
     }
+
+    public function download()
+    {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Content-Disposition', 'attachment; filename="moodle_quiz.xml"');
+    }
+
+    public function generate()
+    {
+        $xml = $this->generateXML();
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml');
+    }
 }
-
-// Example usage
-$questions = [
-    [
-        "type" => "multiple_choice",
-        "question" => "What is the capital of France?",
-        "answers" => [
-            ["text" => "Paris", "correct" => true],
-            ["text" => "Berlin", "correct" => false],
-            ["text" => "Madrid", "correct" => false]
-        ],
-        "solution" => "Paris is the capital of France."
-    ],
-    [
-        "type" => "numeric",
-        "question" => "Solve: $5 + 7$",
-        "answer" => 12,
-        "solution" => "The correct answer is 12 because $5 + 7 = 12$."
-    ]
-];
-
-$generator = new MoodleQuizGenerator($questions);
-$generator->generateXML();
