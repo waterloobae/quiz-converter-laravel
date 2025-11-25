@@ -188,9 +188,28 @@ class H5PQuizGenerator extends Controller {
         }
     }
 
+    private function cleanup() {
+        if ($this->h5pDir && is_dir($this->h5pDir)) {
+            $this->removeDirectory($this->h5pDir);
+        }
+    }
+
+    private function removeDirectory($dir) {
+        if (!is_dir($dir)) {
+            return;
+        }
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = "$dir/$file";
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
+    }
+
     public function download() {
         $this->generate();
         $content = file_get_contents($this->outputFile);
+        $this->cleanup();
         
         return response($content, 200)
             ->header('Content-Type', 'application/zip')
