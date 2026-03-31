@@ -1,5 +1,6 @@
 {
   "name": "waterloobae/quizconverter",
+  "version": "1.0.0",
   "description": "Quiz converter for LMSs",
   "license": "MIT",
   "minimum-stability": "dev",
