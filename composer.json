@@ -5,88 +5,20 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
+      "php": "^7.4|^8.0",
       "ext-zip": "*",
       "ext-json": "*",
       "illuminate/http": "^9.0|^10.0|^11.0|^12.0|^13.0",
-      "illuminate/routing": "^9.0|^10.0|^11.0|^12.0|^13.0",
-      "h5p/h5p-core": "dev-master", 
-      "h5p/h5p-editor": "dev-master",
-      "h5p/h5p-multi-choice": "dev-master",
-      "h5p/h5p-question-set": "dev-master",
-      "h5p/h5p-arithmetic-quiz": "dev-master",
-      "h5p/h5p-math-display": "dev-master"
-
+      "illuminate/routing": "^9.0|^10.0|^11.0|^12.0|^13.0"
   },
-  "repositories": [
-      {
-          "type": "package",
-          "package": {
-              "name": "h5p/h5p-math-display",
-              "version": "dev-master",
-              "source": {
-                  "url": "https://github.com/h5p/h5p-math-display.git",
-                  "type": "git",
-                  "reference": "master"
-              },
-              "autoload": {
-                  "classmap": [
-                      "."
-                  ]
-              }
-          }
-      },
-      {
-          "type": "package",
-          "package": {
-              "name": "h5p/h5p-multi-choice",
-              "version": "dev-master",
-              "source": {
-                  "url": "https://github.com/h5p/h5p-multi-choice.git",
-                  "type": "git",
-                  "reference": "master"
-              },
-              "autoload": {
-                  "classmap": [
-                      "."
-                  ]
-              }
-          }
-      },
-      {
-          "type": "package",
-          "package": {
-              "name": "h5p/h5p-question-set",
-              "version": "dev-master",
-              "source": {
-                  "url": "https://github.com/h5p/h5p-question-set.git",
-                  "type": "git",
-                  "reference": "master"
-              },
-              "autoload": {
-                  "classmap": [
-                      "."
-                  ]
-              }
-          }
-      },
-      {
-          "type": "package",
-          "package": {
-              "name": "h5p/h5p-arithmetic-quiz",
-              "version": "dev-master",
-              "source": {
-                  "url": "https://github.com/h5p/h5p-arithmetic-quiz.git",
-                  "type": "git",
-                  "reference": "master"
-              },
-              "autoload": {
-                  "classmap": [
-                      "."
-                  ]
-              }
-          }
-      }
-  ],
+  "suggest": {
+      "h5p/h5p-core": "Required for H5PQuizGenerator",
+      "h5p/h5p-editor": "Required for H5PQuizGenerator",
+      "h5p/h5p-multi-choice": "Required for H5PQuizGenerator",
+      "h5p/h5p-question-set": "Required for H5PQuizGenerator",
+      "h5p/h5p-arithmetic-quiz": "Required for H5PQuizGenerator",
+      "h5p/h5p-math-display": "Required for H5PQuizGenerator"
+  },
   "autoload": {
       "psr-4": {
           "Waterloobae\\QuizConverter\\": "src/",
