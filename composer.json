@@ -7,8 +7,8 @@
   "require": {
       "ext-zip": "*",
       "ext-json": "*",
-      "illuminate/http": "^9.0|^10.0|^11.0",
-      "illuminate/routing": "^9.0|^10.0|^11.0",
+      "illuminate/http": "^9.0|^10.0|^11.0|^12.0|^13.0",
+      "illuminate/routing": "^9.0|^10.0|^11.0|^12.0|^13.0",
       "h5p/h5p-core": "dev-master", 
       "h5p/h5p-editor": "dev-master",
       "h5p/h5p-multi-choice": "dev-master",
